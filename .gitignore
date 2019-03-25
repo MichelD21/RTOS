@@ -1,0 +1,13 @@
+*.o
+
+*.lst
+
+*.elf
+
+*.vstf
+
+*.wlf
+
+*.bak
+
+*.exe
