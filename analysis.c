@@ -22,9 +22,10 @@ void createTasks(task *tasks, long *seed)
 {
 	int i;
 	/* useful seeds:
-		1553179206 - 58.98% < 71.77% utilization, response-time schedulable
-		1553179287 - 77.06% > 71.77% utilization, response-time schedulable
-		1553179396 - 97.22% > 71.77% utilization, response-time unschedulabe
+		1553179206 - 58.98%	< 71.77% utilization, response-time schedulable
+		1553179287 - 77.06%	> 71.77% utilization, response-time schedulable
+		1553179396 - 97.22%	> 71.77% utilization, response-time unschedulabe
+		1553528768 - task B shows the maximum period (100)
 	*/
 	*seed = time(NULL);
 	srand( *seed );
@@ -33,7 +34,7 @@ void createTasks(task *tasks, long *seed)
 		tasks[i].id = 65 + i;
 		tasks[i].priority = 0;
 		tasks[i].Ctime = (int)( ( rand() % 10 ) + 1 );
-		tasks[i].Dtime = (int)( ( rand() % 90 ) + tasks[i].Ctime );
+		tasks[i].Dtime = (int)( ( ( rand() % 90 ) + 1 ) + tasks[i].Ctime );
 		tasks[i].Ptime = tasks[i].Dtime;
 	}
 }
@@ -111,35 +112,30 @@ void sortTasks(task *tasks)
 void shortShowTasks(task *tasks)
 {
 	int i;
-	printf("Tasks:      ");
+	printf("Tasks:\t");
 	for(i=0; i<TASKS; i++)
 	{
-		printf("    %c", tasks[i].id);
+		printf("\t%c", tasks[i].id);
 	}
-	printf("\nPriority:   ");
+	printf("\nPriority:");
 	for(i=0; i<TASKS; i++)
 	{
-		printf("    %d", tasks[i].priority);
+		printf("\t%d", tasks[i].priority);
 	}
 	printf("\nComputation:");
 	for(i=0; i<TASKS; i++)
 	{
-		if(tasks[i].Ctime / 10 == 1) printf("   %d", tasks[i].Ctime);
-		else printf("    %d", tasks[i].Ctime);
+		printf("\t%d", tasks[i].Ctime);
 	}
-	printf("\nDeadline:   ");
+	printf("\nDeadline:");
 	for(i=0; i<TASKS; i++)
 	{
-		if(tasks[i].Dtime / 10 == 0) printf("    %d", tasks[i].Dtime);
-		else if(tasks[i].Dtime / 100 == 0) printf("   %d", tasks[i].Dtime);
-		else printf("  %d", tasks[i].Dtime);
+		printf("\t%d", tasks[i].Dtime);
 	}
-	printf("\nPeriod:     ");
+	printf("\nPeriod:\t");
 	for(i=0; i<TASKS; i++)
 	{
-		if(tasks[i].Ptime / 10 == 0) printf("    %d", tasks[i].Ptime);
-		else if(tasks[i].Ptime / 100 == 0) printf("   %d", tasks[i].Ptime);
-		else printf("  %d", tasks[i].Ptime);
+		printf("\t%d", tasks[i].Ptime);
 	}
 	printf("\n\n");
 }
@@ -150,10 +146,11 @@ void showTasks(task *tasks)
 	int i;
 	for(i=0; i<TASKS; i++)
 	{
-		printf("Task        %c\n",tasks[i].id);
-		printf("Computation %d\n",tasks[i].Ctime);
-		printf("Deadline    %d\n",tasks[i].Dtime);
-		printf("Period      %d\n\n",tasks[i].Ptime);
+		printf("Task:\t\t%c\n",tasks[i].id);
+		printf("Priority:\t%d\n",tasks[i].priority);
+		printf("Computation:\t%d\n",tasks[i].Ctime);
+		printf("Deadline:\t%d\n",tasks[i].Dtime);
+		printf("Period:\t\t%d\n\n",tasks[i].Ptime);
 	}
 }
 
@@ -177,6 +174,9 @@ int main(void) {
 	// show tasks (shortened)
 	shortShowTasks(tasks);
 	
+	// show tasks
+	//showTasks(tasks);
+	
 	// show utilization result
 	printf("According to Utilization Analysis: ");
 	if( utilAnalysis(tasks, &util, &utilBound) ) printf("Schedulable :)\n");
@@ -189,19 +189,15 @@ int main(void) {
 	else
 	{
 		printf("Unschedulable :(\n");
-		if( failed == (TASKS-1) )
+		printf("Task(s) ");
+		if( failed != (TASKS-1) )
 		{
-			printf("Task %c failed to execute before deadline.\n", tasks[TASKS-1].id);
-		}
-		else
-		{
-			printf("Tasks ");
 			for(i=failed; i<(TASKS-1); i++)
 			{
 				printf("%c, ", tasks[i].id);
 			}
-			printf("%c failed to execute before deadline.\n", tasks[TASKS-1].id);
 		}
+		printf("%c failed to execute before deadline.\n", tasks[TASKS-1].id);
 	}
 	printf("Seed used: %ld.\n", seed);
 	// getchar();
