@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#define NUM_THREADS 5
+
 // -lrt
 
 void *threadFunction(void *tid) {
@@ -25,13 +27,14 @@ void *threadFunction(void *tid) {
 }
 
 int main() {
+
 pthread_t t;
 
-//int tid = 5, i, policy, prio_min, prio_max;
 struct sched_param param;
-// Numeros das constantes relativas aos tipos de escalonadores
-printf("Prioridade FIFO = %d, RR = %d, OTHER = %d\n", SCHED_FIFO, SCHED_RR, SCHED_OTHER);
-pthread_create(&t, NULL, teste, (void *)&tid);
+
+for(i=0; i<NUM_THREADS; i++)
+	pthread_create(&t, NULL, teste, (void *)&tid);
+
 // Obtem parametros da thread
 if (pthread_getschedparam(t, &policy, &param) != 0) {
 printf("Erro pthread_getschedparam!\n");
