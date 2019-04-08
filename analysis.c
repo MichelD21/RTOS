@@ -1,3 +1,5 @@
+// Michel Duarte - 201120456 - 27/03/2019
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -154,7 +156,8 @@ void showTasks(task *tasks)
 	}
 }
 
-int main(void) {
+int main(int argc, char *argv[])
+{
 	
 	int i, failed;
 	float util, utilBound;
@@ -201,4 +204,6 @@ int main(void) {
 	}
 	printf("Seed used: %ld.\n", seed);
 	// getchar();
+	
+	return 0;
 }
