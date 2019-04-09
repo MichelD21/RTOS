@@ -190,7 +190,6 @@ int main()
 	{
 		CPU_ZERO(&cpuSet);
 		CPU_SET( (int)tid % sysconf(_SC_NPROCESSORS_ONLN), &cpuSet);
-		printf("%d\n", ((int)tid) % ((int)(sizeof(cpuSet))));
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
 		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
 		pthread_setschedparam(threads[tid], SCHED_FIFO, &param);
@@ -209,6 +208,8 @@ int main()
 	for(tid=0; tid<NUM_THREADS; tid++)
 		pthread_join(threads[tid], NULL);
 
+	printf("\n");
+
 	// Sixth item on the exercise:
 	param.sched_priority = (int)prio_max_rr/2;
 
@@ -218,7 +219,6 @@ int main()
 	{
 		CPU_ZERO(&cpuSet);
 		CPU_SET( (int)tid % sysconf(_SC_NPROCESSORS_ONLN), &cpuSet);
-		printf("%d\n",( (int)( sizeof(cpuSet) ) ) );
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
 		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
 		pthread_setschedparam(threads[tid], SCHED_RR, &param);
