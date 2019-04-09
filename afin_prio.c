@@ -60,10 +60,35 @@ int main()
 	prio_min_rr = sched_get_priority_min(SCHED_RR);
 	prio_max_rr = sched_get_priority_max(SCHED_RR);
 
-	cpu_set_t cpuSet;
-	printf("Available Processors: %ld\n", sysconf(_SC_NPROCESSORS_ONLN));
+	param.sched_priority = prio_max_fifo;
+	pthread_setschedparam( pthread_self(), SCHED_FIFO, &param );
+	printf("This parent process has %d priority.\n", param.sched_priority);
 
-	printf("Prioridade FIFO = %d, RR = %d, OTHER = %d\n\n", SCHED_FIFO, SCHED_RR, SCHED_OTHER);
+	cpu_set_t cpuSet;
+
+	pthread_getaffinity_np(pthread_self(), sizeof(cpuSet), &cpuSet);
+	for (i = 0; i < sysconf(_SC_NPROCESSORS_ONLN); i++)
+	{
+		if ( CPU_ISSET(i, &cpuSet) )
+			printf("%d ", i);
+	}
+	printf(".\n");
+
+	printf("Available Processors: %ld\n", sysconf(_SC_NPROCESSORS_ONLN));
+	CPU_ZERO(&cpuSet);
+	CPU_SET(0, &cpuSet);
+	pthread_setaffinity_np( pthread_self(), sizeof(cpuSet), &cpuSet );
+	printf("Parent process is running in processor ");
+	CPU_ZERO(&cpuSet);
+	pthread_getaffinity_np(pthread_self(), sizeof(cpuSet), &cpuSet);
+	for (i = 0; i < sysconf(_SC_NPROCESSORS_ONLN); i++)
+	{
+		if ( CPU_ISSET(i, &cpuSet) )
+			printf("%d ", i);
+	}
+	printf(".\n");
+
+	printf("FIFO = %d, RR = %d, OTHER = %d\n\n", SCHED_FIFO, SCHED_RR, SCHED_OTHER);
 
 	// First item on the exercise:
 	CPU_ZERO(&cpuSet);
@@ -75,7 +100,7 @@ int main()
 	for(tid=0; tid<NUM_THREADS; tid++)
 	{
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
-		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
+		pthread_setaffinity_np(threads[tid], sizeof(cpuSet), &cpuSet);
 		pthread_setschedparam(threads[tid], SCHED_FIFO, &param);
 		printf("Created thread %c, Prio: %d, Afin: ", (char)(tid+65), param.sched_priority );
 		CPU_ZERO(&cpuSet);
@@ -104,7 +129,7 @@ int main()
 	for(tid=0; tid<NUM_THREADS; tid++)
 	{
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
-		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
+		pthread_setaffinity_np(threads[tid], sizeof(cpuSet), &cpuSet);
 		pthread_setschedparam(threads[tid], SCHED_RR, &param);
 		printf("Created thread %c, Prio: %d, Afin: ", (char)(tid+65), param.sched_priority );
 		CPU_ZERO(&cpuSet);
@@ -132,7 +157,7 @@ int main()
 	for(tid=0; tid<NUM_THREADS; tid++)
 	{
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
-		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
+		pthread_setaffinity_np(threads[tid], sizeof(cpuSet), &cpuSet);
 		param.sched_priority = (int)(prio_min_fifo + prio_max_fifo*tid/10);
 		pthread_setschedparam(threads[tid], SCHED_FIFO, &param);
 		printf("Created thread %c, Prio: %d, Afin: ", (char)(tid+65), param.sched_priority );
@@ -161,7 +186,7 @@ int main()
 	for(tid=0; tid<NUM_THREADS; tid++)
 	{
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
-		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
+		pthread_setaffinity_np(threads[tid], sizeof(cpuSet), &cpuSet);
 		param.sched_priority = (int)(prio_min_rr + prio_max_rr*tid/10);
 		pthread_setschedparam(threads[tid], SCHED_RR, &param);
 		printf("Created thread %c, Prio: %d, Afin: ", (char)(tid+65), param.sched_priority );
@@ -191,7 +216,7 @@ int main()
 		CPU_ZERO(&cpuSet);
 		CPU_SET( (int)tid % sysconf(_SC_NPROCESSORS_ONLN), &cpuSet);
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
-		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
+		pthread_setaffinity_np(threads[tid], sizeof(cpuSet), &cpuSet);
 		pthread_setschedparam(threads[tid], SCHED_FIFO, &param);
 		printf("Created thread %c, Prio: %d, Afin: ", (char)(tid+65), param.sched_priority );
 		CPU_ZERO(&cpuSet);
@@ -220,7 +245,7 @@ int main()
 		CPU_ZERO(&cpuSet);
 		CPU_SET( (int)tid % sysconf(_SC_NPROCESSORS_ONLN), &cpuSet);
 		rc = pthread_create( &threads[tid], NULL, threadFunction, (void *)tid );
-		pthread_setaffinity_np( threads[tid], sizeof(cpuSet), &cpuSet);
+		pthread_setaffinity_np(threads[tid], sizeof(cpuSet), &cpuSet);
 		pthread_setschedparam(threads[tid], SCHED_RR, &param);
 		printf("Created thread %c, Prio: %d, Afin: ", (char)(tid+65), param.sched_priority );
 		CPU_ZERO(&cpuSet);
