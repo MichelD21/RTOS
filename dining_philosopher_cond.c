@@ -14,6 +14,7 @@
 
 // mutexes
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t auxMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 //pthread_mutex_t cutlery[NUM_THREADS] = PTHREAD_MUTEX_INITIALIZER;
 int cutlery[NUM_THREADS] = { 0 };
@@ -25,36 +26,47 @@ void *threadPhilosopher(void *threadId)
 	philoNum = (long)threadId;
 	int s;
 	
-	pthread_mutex_lock(&mutex);
-	pthread_mutex_unlock(&mutex);
+	pthread_mutex_lock(&auxMutex);
+	pthread_mutex_unlock(&auxMutex);
 	while(1)
 	{
 		printf("Philosopher %d is thinking.\n", (int)philoNum);
 		sleep(1);
 
 		pthread_mutex_lock(&mutex);
-
 			while( cutlery[(int)philoNum] == 1 )
 				pthread_cond_wait(&cond, &mutex);
-			cutlery[philoNum] = 1;
+			pthread_mutex_lock(&auxMutex);
+				cutlery[philoNum] = 1;
+				printf("Philosopher %d has grabbed cutlery #%d.\n", (int)philoNum, (int)philoNum);
+			pthread_mutex_unlock(&auxMutex);
 			usleep(5);
-			printf("Philosopher %d has grabbed cutlery #%d.\n", (int)philoNum, (int)philoNum);
 
 			while( cutlery[((int)(philoNum+1) % NUM_THREADS)] == 1 )
 				pthread_cond_wait(&cond, &mutex);
-			cutlery[((int)(philoNum+1) % NUM_THREADS)] = 1;
+			pthread_mutex_lock(&auxMutex);
+				cutlery[((int)(philoNum+1) % NUM_THREADS)] = 1;
+				printf("Philosopher %d has grabbed cutlery #%d.\n", (int)philoNum, ((int)(philoNum+1) % NUM_THREADS));
+			pthread_mutex_unlock(&auxMutex);
 			usleep(5);
-			printf("Philosopher %d has grabbed cutlery #%d.\n", (int)philoNum, ((int)(philoNum+1) % NUM_THREADS));
+		pthread_mutex_unlock(&mutex);
 			
-			printf("Philosopher %d is dining.\n", (int)philoNum);
-			sleep(1);
+		printf("Philosopher %d is dining.\n", (int)philoNum);
+		sleep(1);
 
-			cutlery[philoNum] = 0;
-			printf("Philosopher %d has released cutlery #%d.\n", (int)philoNum, (int)philoNum);
-			pthread_cond_broadcast(&cond);
+		pthread_mutex_lock(&auxMutex);
 			cutlery[((int)(philoNum+1) % NUM_THREADS)] = 0;
 			printf("Philosopher %d has released cutlery #%d.\n", (int)philoNum, ((int)(philoNum+1) % NUM_THREADS));
 			pthread_cond_broadcast(&cond);
+		pthread_mutex_unlock(&auxMutex);
+		usleep(5);
+
+		pthread_mutex_lock(&auxMutex);
+			cutlery[philoNum] = 0;
+			printf("Philosopher %d has released cutlery #%d.\n", (int)philoNum, (int)philoNum);
+			pthread_cond_broadcast(&cond);
+		pthread_mutex_unlock(&auxMutex);
+		usleep(5);
 	
 		pthread_mutex_unlock(&mutex);
 	}
@@ -67,14 +79,14 @@ int main()
 	long tid;
 	
 	// create
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&auxMutex);
 	for(tid=0; tid<NUM_THREADS; tid++)
 	{
 		s = pthread_create(&threads[tid], NULL, threadPhilosopher, (void *)tid);
 			if (s != 0)
 				handle_error_en(s, "func: pthread_create");
 	}
-	pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(&auxMutex);
 
 	for(tid=0; tid<NUM_THREADS; tid++)
 		pthread_join(threads[tid], NULL);
